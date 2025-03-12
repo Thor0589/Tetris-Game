@@ -1,0 +1,230 @@
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 663, in main_menu
+    main()  # Call the main game function
+    ~~~~^^
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 605, in main
+    draw_window(win, grid, score, level, lines_cleared, tetris_count)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 364, in draw_window
+    surface.fill(BACKGROUND_COLOR)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 663, in main_menu
+    main()  # Call the main game function
+    ~~~~^^
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 605, in main
+    draw_window(win, grid, score, level, lines_cleared, tetris_count)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 364, in draw_window
+    surface.fill(BACKGROUND_COLOR)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 663, in main_menu
+    main()  # Call the main game function
+    ~~~~^^
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 550, in main
+    draw_text_middle("PAUSED", 60, (255, 255, 255), win)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 284, in draw_text_middle
+    surface.blit(label, (top_left_x + play_width/2 - (label.get_width()/2),
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        top_left_y + play_height/2 - (label.get_height()/2) + i*size))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
+Traceback (most recent call last):
+  File "/Users/fernandoceja/Downloads/VSCODE/Games/Tetris.py", line 653, in main_menu
+    win.fill(BACKGROUND_COLOR)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^
+pygame.error: display Surface quit
+
