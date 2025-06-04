@@ -5,11 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tetris Game</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <style>
         body {
-            font-family: 'Press Start 2P', monospace;
+            font-family: 'Courier New', monospace;
             background-color: #111827;
             color: #f9fafb;
             overflow: auto;
@@ -49,7 +47,7 @@
             border: 0.125rem solid #4b5563;
             box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
             transition: background-color 0.3s ease, transform 0.2s ease;
-            font-family: 'Press Start 2P', monospace;
+            font-family: 'Courier New', monospace;
             font-size: 0.6rem;
             text-shadow: 0.0625rem 0.0625rem 0 #1f2937;
         }
@@ -176,7 +174,115 @@
             font-size: 0.8rem;
             margin-bottom: 0.25rem;
             color: #cbd5e0;
+        .hidden { display: none; }
+
+        .touch-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            z-index: 1000;
         }
+
+        .touch-controls.visible {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 90vw;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .touch-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 15px;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            min-width: 60px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            touch-action: manipulation;
+            transition: all 0.2s;
+        }
+
+        .touch-btn:active {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0.95);
+        }
+
+        .touch-btn.special {
+            border-radius: 10px;
+            min-width: 80px;
+            font-size: 14px;
+        }
+
+        .dpad {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            gap: 5px;
+            width: 180px;
+            height: 180px;
+        }
+
+        .dpad .touch-btn {
+            min-width: 50px;
+            min-height: 50px;
+            padding: 10px;
+        }
+
+        .dpad-up { grid-column: 2; grid-row: 1; }
+        .dpad-left { grid-column: 1; grid-row: 2; }
+        .dpad-down { grid-column: 2; grid-row: 2; }
+        .dpad-right { grid-column: 3; grid-row: 2; }
+
+        .controller-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1000;
+            border: 2px solid;
+        }
+
+        .controller-status.connected { border-color: #00ff00; }
+        .controller-status.disconnected { border-color: #ff6b6b; }
+
+        @media (max-width: 768px) {
+            .touch-controls.visible {
+                bottom: 10px;
+                gap: 8px;
+            }
+            .touch-btn {
+                min-width: 50px;
+                min-height: 50px;
+                padding: 12px;
+                font-size: 16px;
+            }
+            .dpad {
+                width: 150px;
+                height: 150px;
+            }
+        }
+
     </style>
 </head>
 
@@ -225,10 +331,27 @@
             <button class="close-button">Close</button>
         </div>
 
+    <div class="controller-status disconnected" id="controllerStatus">
+        🎮 No Controller
+    </div>
+
+    <div class="touch-controls" id="touchControls">
+        <div class="dpad">
+            <div class="touch-btn dpad-up" data-action="rotate">↑</div>
+            <div class="touch-btn dpad-left" data-action="left">←</div>
+            <div class="touch-btn dpad-down" data-action="down">↓</div>
+            <div class="touch-btn dpad-right" data-action="right">→</div>
+        </div>
+        <div class="control-group">
+            <div class="touch-btn special" data-action="drop">DROP</div>
+            <div class="touch-btn special" data-action="pause">⏸</div>
+            <div class="touch-btn special" data-action="music">🎵</div>
+        </div>
+    </div>
+
 
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.min.js"></script>
     <script>
         // Initialize canvas and context
         const canvas = document.getElementById('canvas');
@@ -305,69 +428,229 @@
         ];
 
 
-        // Sound effects using Tone.js
-        const pieceLandedSound = new Tone.Synth().toDestination();
-        pieceLandedSound.oscillator.type = 'triangle';
-        const lineClearSound = new Audio('Win.wav');
-        lineClearSound.volume = 0.7; // Set default volume
-        const gameOverSound = new Tone.Synth().toDestination();
-        gameOverSound.oscillator.type = 'square';
-        const buttonClickSound = new Tone.Synth().toDestination();
-        buttonClickSound.oscillator.type = 'sine';
 
-        // Different sounds for line clears
-        const singleLineClearSound = new Tone.Synth({
-            oscillator: { type: 'square' },
-            envelope: { attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.1 }
-        }).toDestination();
+        // Function to create an empty game grid
+        // ===== Audio Setup =====
+        let audioContext;
+        let musicNodes = [];
+        let musicPlaying = false;
+        let masterVolume = 0.3;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        const tetrisTheme = [
+            {note: 659.25, duration: 400}, // E5
+            {note: 493.88, duration: 200}, // B4
+            {note: 523.25, duration: 200}, // C5
+            {note: 587.33, duration: 400}, // D5
+            {note: 523.25, duration: 200}, // C5
+            {note: 493.88, duration: 200}, // B4
+            {note: 440.00, duration: 400}, // A4
+            {note: 440.00, duration: 200}, // A4
+            {note: 523.25, duration: 200}, // C5
+            {note: 659.25, duration: 400}, // E5
+            {note: 587.33, duration: 200}, // D5
+            {note: 523.25, duration: 200}, // C5
+            {note: 493.88, duration: 600}, // B4
+            {note: 523.25, duration: 200}, // C5
+            {note: 587.33, duration: 400}, // D5
+            {note: 659.25, duration: 400}, // E5
+            {note: 523.25, duration: 400}, // C5
+            {note: 440.00, duration: 400}, // A4
+            {note: 440.00, duration: 800}, // A4
+        ];
 
-        const multipleLineClearSound = new Tone.PolySynth(Tone.Synth, {
-            oscillator: { type: 'triangle' },
-            envelope: { attack: 0.01, decay: 0.3, sustain: 0.7, release: 0.2 }
-        }).toDestination();
-
-        const tetrisClearSound = new Tone.Synth({
-            oscillator: { type: 'sawtooth' },
-            envelope: { attack: 0.01, decay: 0.5, sustain: 0.8, release: 0.8 }
-        }).toDestination();
-
-        // Background music using Audio API
-        const backgroundMusic = new Audio('Tetris.wav'); // Path to your Tetris.wav file
-        backgroundMusic.loop = true; // Make the music loop continuously
-        backgroundMusic.volume = 0.5; // Set initial volume (0.0 to 1.0)
-        let isMusicPlaying = false;
-
-        // Function to start the background music
-        function startBackgroundMusic() {
-            if (isMuted || isMusicPlaying) return;
-            
-            // Play the Tetris theme
-            backgroundMusic.currentTime = 0; // Start from the beginning
-            backgroundMusic.play()
-                .then(() => {
-                    isMusicPlaying = true;
-                })
-                .catch(error => {
-                    console.error("Error playing background music:", error);
-                });
-        }
-
-        // Function to stop the background music
-        function stopBackgroundMusic() {
-            if (!isMusicPlaying) return;
-            
-            backgroundMusic.pause();
-            isMusicPlaying = false;
-        }
-
-        // Function to play sound effects
-        function playSound(sound) {
-            if (!isMuted) {
-                sound.triggerAttackRelease('C5', '8n');
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                if (isIOS && isSafari && audioContext.state === 'suspended') {
+                    const unlock = () => {
+                        audioContext.resume().then(() => {
+                            document.removeEventListener('touchstart', unlock);
+                            document.removeEventListener('touchend', unlock);
+                            document.removeEventListener('click', unlock);
+                        });
+                    };
+                    document.addEventListener('touchstart', unlock, false);
+                    document.addEventListener('touchend', unlock, false);
+                    document.addEventListener('click', unlock, false);
+                }
             }
         }
 
-        // Function to create an empty game grid
+        function playNote(freq, duration, startTime = 0) {
+            if (!audioContext) return;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.setValueAtTime(freq, audioContext.currentTime + startTime);
+            osc.type = 'square';
+            gain.gain.setValueAtTime(0, audioContext.currentTime + startTime);
+            gain.gain.linearRampToValueAtTime(masterVolume, audioContext.currentTime + startTime + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + startTime + duration / 1000 - 0.01);
+            osc.start(audioContext.currentTime + startTime);
+            osc.stop(audioContext.currentTime + startTime + duration / 1000);
+            return {oscillator: osc, gainNode: gain};
+        }
+
+        function playTetrisTheme() {
+            if (!musicPlaying) return;
+            stopMusic();
+            musicNodes = [];
+            let t = 0;
+            const gap = 0.05;
+            tetrisTheme.forEach(note => {
+                const nodes = playNote(note.note, note.duration, t);
+                if (nodes) musicNodes.push(nodes);
+                t += (note.duration / 1000) + gap;
+            });
+            setTimeout(() => {
+                if (musicPlaying && !isPaused) playTetrisTheme();
+            }, t * 1000);
+        }
+
+        function startBackgroundMusic() {
+            if (isMuted || musicPlaying) return;
+            initAudio();
+            musicPlaying = true;
+            playTetrisTheme();
+        }
+
+        function stopMusic() {
+            musicNodes.forEach(({oscillator}) => {
+                try { oscillator.stop(); } catch(e){}
+            });
+            musicNodes = [];
+        }
+
+        function stopBackgroundMusic() {
+            musicPlaying = false;
+            stopMusic();
+        }
+
+        function playSound(type) {
+            if (isMuted) return;
+            initAudio();
+            if (type === 'piece') {
+                playNote(440, 80);
+            } else if (type === 'line') {
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => playNote(f, 150, i * 0.05));
+            } else if (type === 'gameOver') {
+                playNote(220, 600);
+            } else if (type === 'button') {
+                playNote(784, 50);
+            }
+        }
+
+        // ===== Controller & Touch Support =====
+        let gamepadConnected = false;
+        let gamepadIndex = -1;
+        let lastGamepadState = {};
+
+        function detectBackboneController() {
+            const pads = navigator.getGamepads();
+            for (let i = 0; i < pads.length; i++) {
+                const gp = pads[i];
+                if (gp && (gp.id.toLowerCase().includes('backbone') || gp.id.toLowerCase().includes('xbox') || gp.id.toLowerCase().includes('mfi') || gp.mapping === 'standard')) {
+                    return { gamepad: gp, index: i };
+                }
+            }
+            return null;
+        }
+
+        function updateControllerStatus() {
+            const statusElement = document.getElementById('controllerStatus');
+            const touchControls = document.getElementById('touchControls');
+            const controller = detectBackboneController();
+            if (controller) {
+                gamepadConnected = true;
+                gamepadIndex = controller.index;
+                statusElement.textContent = `🎮 ${controller.gamepad.id.substring(0,20)}...`;
+                statusElement.className = 'controller-status connected';
+                touchControls.classList.remove('visible');
+            } else {
+                gamepadConnected = false;
+                gamepadIndex = -1;
+                statusElement.textContent = '🎮 No Controller';
+                statusElement.className = 'controller-status disconnected';
+                if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                    touchControls.classList.add('visible');
+                }
+            }
+        }
+
+        function handleGamepadInput() {
+            if (!gamepadConnected || isPaused) return;
+            const gp = navigator.getGamepads()[gamepadIndex];
+            if (!gp) { updateControllerStatus(); return; }
+            const buttons = {
+                left: gp.buttons[14]?.pressed,
+                right: gp.buttons[15]?.pressed,
+                up: gp.buttons[12]?.pressed,
+                down: gp.buttons[13]?.pressed,
+                a: gp.buttons[0]?.pressed,
+                y: gp.buttons[3]?.pressed,
+                start: gp.buttons[9]?.pressed,
+                select: gp.buttons[8]?.pressed
+            };
+            const justPressed = (name) => {
+                const prev = lastGamepadState[name] || false;
+                const curr = buttons[name];
+                lastGamepadState[name] = curr;
+                return curr && !prev;
+            };
+            const axisX = Math.abs(gp.axes[0]) > 0.3 ? gp.axes[0] : 0;
+            const axisY = Math.abs(gp.axes[1]) > 0.3 ? gp.axes[1] : 0;
+            if (justPressed('left') || (axisX < -0.5 && !lastGamepadState.stickLeft)) {
+                moveTetrominoLeft();
+                lastGamepadState.stickLeft = axisX < -0.5;
+            } else if (axisX >= -0.5) {
+                lastGamepadState.stickLeft = false;
+            }
+            if (justPressed('right') || (axisX > 0.5 && !lastGamepadState.stickRight)) {
+                moveTetrominoRight();
+                lastGamepadState.stickRight = axisX > 0.5;
+            } else if (axisX <= 0.5) {
+                lastGamepadState.stickRight = false;
+            }
+            if (buttons.down || axisY > 0.5) {
+                moveTetrominoDown();
+            }
+            if (justPressed('up') || justPressed('a')) {
+                rotateTetromino();
+            }
+            if (justPressed('y')) {
+                hardDrop();
+            }
+            if (justPressed('start') || justPressed('select')) {
+                startPauseButton.click();
+            }
+        }
+
+        function initTouchControls() {
+            const touchControls = document.getElementById('touchControls');
+            const buttons = touchControls.querySelectorAll('.touch-btn');
+            buttons.forEach(btn => {
+                const action = btn.getAttribute('data-action');
+                btn.addEventListener('touchstart', e => { e.preventDefault(); handleTouchAction(action, true); }, {passive:false});
+                btn.addEventListener('touchend', e => { e.preventDefault(); handleTouchAction(action, false); }, {passive:false});
+                btn.addEventListener('mousedown', e => { e.preventDefault(); handleTouchAction(action, true); });
+                btn.addEventListener('mouseup', e => { e.preventDefault(); handleTouchAction(action, false); });
+            });
+        }
+
+        function handleTouchAction(action, isPressed) {
+            if (isPaused) return;
+            switch(action) {
+                case 'left': if (isPressed) moveTetrominoLeft(); break;
+                case 'right': if (isPressed) moveTetrominoRight(); break;
+                case 'down': if (isPressed) moveTetrominoDown(); break;
+                case 'rotate': if (isPressed) rotateTetromino(); break;
+                case 'drop': if (isPressed) hardDrop(); break;
+                case 'pause': if (isPressed) startPauseButton.click(); break;
+                case 'music': if (isPressed) muteButton.click(); break;
+            }
+        }
         function createEmptyGrid() {
             return Array.from({ length: gridHeight }, () => Array(gridWidth).fill(0));
         }
@@ -482,7 +765,7 @@
                     return;
                 }
 
-                playSound(pieceLandedSound);
+                playSound("piece");
                 resetDropInterval(); // Reset interval after piece lands
             }
         }
@@ -556,26 +839,7 @@
                 animateLineClear(linesToClear, () => {
                     // This is the callback after animation completes
                     
-                    // Play the appropriate sound based on number of lines
-                    if (!isMuted) {
-                        lineClearSound.currentTime = 0; // Reset to start of sound
-                        
-                        if (linesToClear.length === 1) {
-                            // Single line - normal speed, lower volume
-                            lineClearSound.playbackRate = 1.0;
-                            lineClearSound.volume = 0.5;
-                        } else if (linesToClear.length === 4) {
-                            // Tetris! - faster playback, full volume
-                            lineClearSound.playbackRate = 1.5;
-                            lineClearSound.volume = 1.0;
-                        } else {
-                            // 2-3 lines - slightly faster, medium volume
-                            lineClearSound.playbackRate = 1.2;
-                            lineClearSound.volume = 0.7;
-                        }
-                        
-                        lineClearSound.play().catch(e => console.error("Error playing win sound:", e));
-                    }
+                    playSound("line");
                     
                     // Actually remove the lines after animation
                     linesToClear.forEach(lineY => {
@@ -657,7 +921,7 @@
 
             updateHighScore();
             messageBox.classList.remove('hidden');
-            playSound(gameOverSound);
+            playSound("gameOver");
         }
 
         // Restart the game
@@ -687,6 +951,8 @@
             const deltaTime = time - lastTime;
             lastTime = time;
 
+            handleGamepadInput();
+
             if (!isPaused) {
                 dropCounter += deltaTime;
 
@@ -697,7 +963,7 @@
 
                 clearCanvas();
                 drawGameGrid();
-                drawGhostPiece(); // Draw ghost piece before actual piece
+                drawGhostPiece();
                 drawTetromino();
             }
 
@@ -822,7 +1088,7 @@
                 return;
             }
             
-            playSound(pieceLandedSound);
+            playSound("piece");
         }
 
         // Add the updateHighScore function
@@ -832,7 +1098,7 @@
 
         // Event listeners for button controls
         startPauseButton.addEventListener('click', () => {
-            playSound(buttonClickSound);
+            playSound("button");
             if (isPaused) {
                 if (!currentTetromino) {
                     resizeCanvas(); // Initialize canvas size
@@ -855,19 +1121,19 @@
         });
 
         rotateButton.addEventListener('click', () => {
-            playSound(buttonClickSound);
+            playSound("button");
             rotateTetromino();
         });
         moveLeftButton.addEventListener('click', () => {
-            playSound(buttonClickSound);
+            playSound("button");
             moveTetrominoLeft();
         });
         moveRightButton.addEventListener('click', () => {
-            playSound(buttonClickSound);
+            playSound("button");
             moveTetrominoRight();
         });
         muteButton.addEventListener('click', () => {
-            playSound(buttonClickSound);
+            playSound("button");
             isMuted = !isMuted;
             muteButton.textContent = isMuted ? 'Sound Off' : 'Sound On';
             
@@ -879,13 +1145,13 @@
             }
         });
         restartButton.addEventListener('click', () => {
-            playSound(buttonClickSound);
+            playSound("button");
             restartGame();
         });
 
         // Event listener for instructions button
         instructionsButton.addEventListener('click', () => {
-            playSound(buttonClickSound); // Optional: Play sound on button click
+            playSound("button"); // Optional: Play sound on button click
             instructionsPopup.style.display = 'block'; // Show the popup
         });
 
@@ -895,7 +1161,7 @@
         });
 
         hardDropButton.addEventListener('click', () => {
-            playSound(buttonClickSound);
+            playSound("button");
             hardDrop();
         });
 
@@ -953,6 +1219,11 @@
         let lastTime = 0;
         let dropCounter = 0;
         startGameLoop();
+        updateControllerStatus();
+        initTouchControls();
+        window.addEventListener("gamepadconnected", () => updateControllerStatus());
+        window.addEventListener("gamepaddisconnected", () => updateControllerStatus());
+        setInterval(updateControllerStatus, 2000);
         window.addEventListener('resize', () => {
             resizeCanvas();
             gridSize = Math.floor(canvas.width / gridWidth); // Recalculate gridSize on resize
@@ -967,31 +1238,3 @@
 </body>
 
 </html>
-```
-# Tetris Game
-
-A classic Tetris game built with HTML5, CSS, and JavaScript.
-
-## Features
-
-- Classic Tetris gameplay
-- Responsive design that works on desktop and mobile
-- Sound effects and Tetris theme music
-- Ghost piece to show where the tetromino will land
-- Next piece preview
-- Score tracking and high score saving
-- Level progression with increasing speed
-
-## How to Play
-
-- Arrow keys to move and rotate pieces
-- Spacebar for hard drop
-- P to pause
-- M to mute/unmute
-
-## Technologies Used
-
-- HTML5 Canvas
-- CSS with Tailwind CSS
-- JavaScript
-- Tone.js for sound effects
