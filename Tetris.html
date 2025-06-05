@@ -249,6 +249,7 @@
             <div class="score">Score: <span id="score">0</span></div>
             <div class="level">Level: <span id="level">1</span></div>
             <div class="lines">Lines: <span id="lines">0</span></div>
+            <div class="high-score">High Score: <span id="highScore">0</span></div>
             
             <div class="next-piece">
                 <div>Next Piece:</div>
@@ -285,6 +286,7 @@
     <div class="game-over" id="gameOver">
         <h2>Game Over!</h2>
         <div>Final Score: <span id="finalScore">0</span></div>
+        <div>High Score: <span id="finalHighScore">0</span></div>
         <button onclick="restartGame()">Play Again</button>
     </div>
 
@@ -322,6 +324,7 @@
         let score = 0;
         let level = 1;
         let lines = 0;
+        let highScore = parseInt(localStorage.getItem('tetrisHighScore')) || 0;
         let dropTime = 0;
         let dropInterval = 1000;
         let isPaused = false;
@@ -838,6 +841,23 @@
                 drawPiece(nextPiece, nextCtx, offsetX, offsetY);
             }
         }
+
+        function drawGhostPiece() {
+            if (!currentPiece) return;
+            const ghost = {
+                shape: currentPiece.shape,
+                x: currentPiece.x,
+                y: currentPiece.y,
+                color: currentPiece.color
+            };
+            while (isValidMove(ghost, 0, 1)) {
+                ghost.y++;
+            }
+            ctx.save();
+            ctx.globalAlpha = 0.3;
+            drawPiece(ghost);
+            ctx.restore();
+        }
         
         function isValidMove(piece, dx = 0, dy = 0, shape = piece.shape) {
             for (let y = 0; y < shape.length; y++) {
@@ -923,7 +943,12 @@
         function gameOver() {
             gameRunning = false;
             stopMusic();
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('tetrisHighScore', highScore);
+            }
             document.getElementById('finalScore').textContent = score;
+            updateHighScore();
             document.getElementById('gameOver').style.display = 'block';
         }
         
@@ -931,6 +956,12 @@
             document.getElementById('score').textContent = score;
             document.getElementById('level').textContent = level;
             document.getElementById('lines').textContent = lines;
+            updateHighScore();
+        }
+
+        function updateHighScore() {
+            document.getElementById('highScore').textContent = highScore;
+            document.getElementById('finalHighScore').textContent = highScore;
         }
         
         function gameLoop(timestamp) {
@@ -958,6 +989,7 @@
             }
             
             drawBoard();
+            drawGhostPiece();
             drawPiece(currentPiece);
             drawNextPiece();
             
@@ -1045,6 +1077,7 @@
         nextPiece = getRandomPiece();
         spawnNewPiece();
         updateScore();
+        updateHighScore();
         
         // Initialize touch controls
         initTouchControls();
