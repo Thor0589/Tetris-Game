@@ -1,125 +1,227 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-touch-fullscreen" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tetris Game</title>
     <style>
         body {
-            margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Arial', sans-serif;
+            font-family: 'Courier New', monospace;
+            background-color: #111827; /* Tailwind bg-gray-900 */
+            color: #f9fafb; /* Tailwind text-gray-50 */
+            overflow: auto; /* Changed from hidden to auto if content overflows */
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            color: white;
+            margin: 0;
         }
-        
-        .game-container {
+
+        #game-container {
             display: flex;
-            gap: 30px;
-            align-items: flex-start;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.25rem; /* Tailwind p-5 */
+            max-width: 90%;   /* Ensure it doesn't get too wide on large screens */
+            width: 100%;      /* Responsive width */
+            box-sizing: border-box;
+            position: relative; /* For positioning message banners */
+        }
+
+        #controls-container {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem; /* Tailwind space-x-3 approx */
+            margin-bottom: 0.75rem; /* Tailwind mb-3 */
+            width: 100%;
+            max-width: 600px; /* Limit width of control buttons */
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+        }
+
+        .game-button {
+            padding: 0.5rem 1rem; /* Tailwind p-2 px-4 */
+            border-radius: 0.25rem; /* Tailwind rounded-sm */
+            background-color: #374151; /* Tailwind bg-gray-700 */
+            color: #f9fafb; /* Tailwind text-gray-50 */
+            cursor: pointer;
+            border: 0.125rem solid #4b5563; /* 2px border, gray-600 */
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2); /* Subtle shadow */
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-family: 'Courier New', monospace;
+            font-size: 0.6rem; /* Smaller font for buttons */
+            text-shadow: 0.0625rem 0.0625rem 0 #1f2937; /* text-gray-800 shadow */
+        }
+
+        .game-button:hover {
+            background-color: #4b5563; /* Tailwind bg-gray-600 */
+            border-color: #6b7280; /* Tailwind border-gray-500 */
+            transform: scale(1.05);
+            box-shadow: 0 0.25rem 0.375rem rgba(0, 0, 0, 0.3);
+        }
+
+        .game-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.3);
+        }
+
+        #canvas {
+            background-color: #242424; /* Darker gray for game area */
+            border: 0.25rem solid #6b7280; /* 4px border, gray-500 */
+            border-radius: 0.25rem; /* Tailwind rounded-sm */
+            box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.5); /* Larger shadow */
+            margin-bottom: 0.75rem; /* Tailwind mb-3 */
+            width: 100%;      /* Make canvas responsive */
+            max-width: 320px; /* Max width to maintain aspect ratio and playability */
+            /* height is set dynamically by JS to maintain aspect ratio */
+        }
+
+        #score-level {
+            margin-bottom: 0.5rem; /* Tailwind mb-2 */
+            font-size: 0.8rem; /* Slightly smaller text */
+            color: #cbd5e0; /* Tailwind text-gray-300 */
+            text-align: center;
         }
         
-        .game-board {
-            background: rgba(0, 0, 0, 0.8);
-            border: 3px solid #fff;
-            border-radius: 10px;
-            padding: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        #score-level p { /* Style for the small explanation text */
+            font-size: 0.6rem;
+            margin-top: 0.25rem;
         }
-        
-        canvas {
-            display: block;
-            background: #000;
-            border-radius: 5px;
-        }
-        
-        .game-info {
-            background: rgba(0, 0, 0, 0.8);
-            border: 3px solid #fff;
-            border-radius: 10px;
-            padding: 20px;
-            min-width: 200px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-        
-        .score, .level, .lines {
-            margin: 15px 0;
-            font-size: 18px;
-        }
-        
-        .controls {
-            margin-top: 30px;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-        
-        .game-over {
-            position: absolute;
+
+        #message-box {
+            position: absolute; /* Position relative to game-container */
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            padding: 30px;
-            border-radius: 15px;
+            background-color: rgba(31, 41, 55, 0.9); /* Tailwind bg-gray-800 with opacity */
+            padding: 1.5rem; /* Tailwind p-6 */
+            border-radius: 0.5rem; /* Tailwind rounded-lg */
             text-align: center;
-            border: 3px solid #fff;
-            display: none;
-        }
-        
-        button {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: transform 0.2s;
-        }
-        
-        button:hover {
-            transform: scale(1.05);
-        }
-        
-        .next-piece {
-            margin-top: 20px;
-            text-align: center;
-        }
-        
-        .next-canvas {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-        
-        .audio-controls {
-            margin-top: 20px;
-            text-align: center;
-        }
-        
-        .audio-controls button {
-            margin: 5px;
-            padding: 8px 16px;
-            font-size: 14px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
+            z-index: 100; /* Ensure it's above other elements */
         }
 
-        /* Touch Controls */
+        #message-box p {
+            margin-bottom: 1rem; /* Tailwind mb-4 */
+            font-size: 1.2rem; /* Larger text for message */
+        }
+
+        #message-box button {
+            padding: 0.5rem 1rem; /* Tailwind py-2 px-4 */
+            border-radius: 0.25rem; /* Tailwind rounded-md */
+            background-color: #3b82f6; /* Tailwind bg-blue-500 */
+            color: #f9fafb; /* Tailwind text-gray-50 */
+            cursor: pointer;
+            border: none;
+            font-size: 0.8rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #instructions-popup {
+            display: none; /* Initially hidden */
+            position: fixed; /* Fixed position to overlay content */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(31, 41, 55, 0.95); /* Darker, more opaque background */
+            padding: 2rem; /* More padding */
+            border-radius: 0.5rem; /* Tailwind rounded-lg */
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.6); /* Stronger shadow */
+            z-index: 200; /* Above message-box */
+            max-width: 90%;
+            width: 400px; /* Fixed width for better layout */
+            text-align: left; /* Align text to left for readability */
+        }
+
+        #instructions-popup h2 {
+            font-size: 1.2rem; /* Slightly larger heading */
+            margin-bottom: 1rem;
+            color: #60a5fa; /* Tailwind text-blue-400 */
+        }
+
+        #instructions-popup ul {
+            list-style: none; /* Remove default bullets */
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+
+        #instructions-popup li {
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        #instructions-popup li strong {
+            color: #9ca3af; /* Tailwind text-gray-400 for emphasis */
+        }
+
+        #instructions-popup .close-button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            background-color: #4b5563; /* Tailwind bg-gray-600 */
+            color: #f9fafb;
+            cursor: pointer;
+            border: none;
+            font-size: 0.6rem;
+        }
+        
+        #preview-canvas {
+            border: 2px solid #6b7280; /* Tailwind border-gray-500 */
+            border-radius: 4px; /* Tailwind rounded-sm */
+            margin-bottom: 10px;
+            background-color: #242424; /* Match main canvas bg */
+        }
+
+        .preview-container {
+            display: flex;
+            flex-direction: column; /* Corrected from flex-col which is a Tailwind class */
+            align-items: center;
+            margin-bottom: 1rem; /* Tailwind mb-4 */
+        }
+
+        .preview-title {
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem; /* Tailwind mb-1 */
+            color: #cbd5e0; /* Tailwind text-gray-300 */
+        }
+
+        /* Styles for new message banners */
+        .game-message-banner {
+            position: absolute;
+            top: 30%; /* Positioned higher */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(55, 65, 81, 0.9); /* Tailwind bg-gray-700 with opacity */
+            color: #f3f4f6; /* Tailwind text-gray-100 */
+            padding: 0.75rem 1.5rem; /* Tailwind p-3 px-6 */
+            border-radius: 0.375rem; /* Tailwind rounded-md */
+            font-size: 1.5rem; /* Tailwind text-2xl */
+            font-weight: bold;
+            z-index: 150; 
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            pointer-events: none; 
+            transform: translate(-50%, -70%) scale(0.8); /* Initial state for animation */
+        }
+
+        .game-message-banner.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1); /* Final state for animation */
+        }
+        
+        /* Touch Controls and Gamepad Status Styles */
         .touch-controls {
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            display: none;
+            display: none; 
             z-index: 1000;
+            padding-bottom: env(safe-area-inset-bottom); 
         }
 
         .touch-controls.visible {
@@ -152,7 +254,7 @@
             justify-content: center;
             cursor: pointer;
             user-select: none;
-            touch-action: manipulation;
+            touch-action: manipulation; 
             transition: all 0.2s;
         }
 
@@ -161,7 +263,7 @@
             transform: scale(0.95);
         }
 
-        .touch-btn.special {
+        .touch-btn.special { 
             border-radius: 10px;
             min-width: 80px;
             font-size: 14px;
@@ -172,705 +274,465 @@
             grid-template-columns: 1fr 1fr 1fr;
             grid-template-rows: 1fr 1fr 1fr;
             gap: 5px;
-            width: 180px;
+            width: 180px; 
             height: 180px;
         }
-
-        .dpad .touch-btn {
-            min-width: 50px;
-            min-height: 50px;
-            padding: 10px;
+        
+        .dpad .touch-btn { 
+             min-width: 50px;
+             min-height: 50px;
+             padding: 10px;
         }
 
         .dpad-up { grid-column: 2; grid-row: 1; }
         .dpad-left { grid-column: 1; grid-row: 2; }
-        .dpad-down { grid-column: 2; grid-row: 2; }
+        .dpad-down { grid-column: 2; grid-row: 2; } 
         .dpad-right { grid-column: 3; grid-row: 2; }
 
         .controller-status {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0,0,0,0.8);
             color: white;
             padding: 10px 15px;
             border-radius: 20px;
             font-size: 12px;
             z-index: 1000;
-            border: 2px solid;
+            border: 2px solid; 
         }
-
-        .controller-status.connected {
-            border-color: #00ff00;
-        }
-
-        .controller-status.disconnected {
-            border-color: #ff6b6b;
-        }
+        .controller-status.connected { border-color: #00ff00; }
+        .controller-status.disconnected { border-color: #ff6b6b; }
 
         @media (max-width: 768px) {
-            .game-container {
-                flex-direction: column;
-                gap: 20px;
-            }
-            
-            .game-info {
-                min-width: auto;
-                width: 100%;
-                max-width: 300px;
-            }
-
             .touch-controls.visible {
-                bottom: 10px;
+                bottom: 10px; 
                 gap: 8px;
             }
-
             .touch-btn {
                 min-width: 50px;
                 min-height: 50px;
                 padding: 12px;
                 font-size: 16px;
             }
-
             .dpad {
                 width: 150px;
                 height: 150px;
             }
+            .game-button { 
+                font-size: 0.5rem;
+                padding: 0.4rem 0.8rem;
+            }
+             #score-level {
+                font-size: 0.7rem;
+            }
+            h1 {
+                font-size: 1.25rem; 
+            }
+            .game-message-banner {
+                font-size: 1.25rem; /* text-xl */
+                padding: 0.5rem 1rem;
+            }
         }
     </style>
 </head>
+
 <body>
-    <div class="game-container">
-        <div class="game-board">
-            <canvas id="gameCanvas" width="300" height="600"></canvas>
+    <div id="game-container">
+        <h1 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: white; background-image: linear-gradient(to right, #4ade80, #3b82f6); -webkit-background-clip: text; background-clip: text; color: transparent;">Tetris</h1>
+        <div id="score-level">
+            Score: <span id="score">0</span> |
+            Level: <span id="level">1</span> |
+            High Score: <span id="high-score">0</span>
+            <p>Level increases every 500 points, making the game faster!</p>
         </div>
-        
-        <div class="game-info">
-            <div class="score">Score: <span id="score">0</span></div>
-            <div class="level">Level: <span id="level">1</span></div>
-            <div class="lines">Lines: <span id="lines">0</span></div>
-            <div class="high-score">High Score: <span id="highScore">0</span></div>
-            
-            <div class="next-piece">
-                <div>Next Piece:</div>
-                <canvas id="nextCanvas" class="next-canvas" width="120" height="120"></canvas>
-            </div>
-            
-            <div class="audio-controls">
-                <button onclick="toggleMusic()">🎵 Music</button>
-                <button onclick="adjustVolume(-0.1)">🔉</button>
-                <button onclick="adjustVolume(0.1)">🔊</button>
-            </div>
-            
-            <div class="controls">
-                <strong>Controls:</strong><br>
-                <strong>Keyboard:</strong><br>
-                ← → Move<br>
-                ↓ Soft Drop<br>
-                ↑ Rotate<br>
-                Space: Hard Drop<br>
-                P: Pause<br>
-                M: Music<br><br>
-                <strong>Controller:</strong><br>
-                D-Pad/Stick: Move<br>
-                A/Down: Rotate<br>
-                Y/RT: Hard Drop<br>
-                Start/Select: Pause<br>
-                X: Music<br><br>
-                <strong>Touch:</strong><br>
-                Use on-screen controls
-            </div>
+        <div class="preview-container">
+            <div class="preview-title">Next Piece</div>
+            <canvas id="preview-canvas"></canvas>
         </div>
-    </div>
-    
-    <div class="game-over" id="gameOver">
-        <h2>Game Over!</h2>
-        <div>Final Score: <span id="finalScore">0</span></div>
-        <div>High Score: <span id="finalHighScore">0</span></div>
-        <button onclick="restartGame()">Play Again</button>
-    </div>
+        <canvas id="canvas"></canvas>
 
-    <!-- Controller Status -->
-    <div class="controller-status disconnected" id="controllerStatus">
-        🎮 No Controller
-    </div>
+        <!-- Message Banners -->
+        <div id="level-up-banner" class="game-message-banner hidden">Level Up!</div>
+        <div id="dynamic-message-banner" class="game-message-banner hidden"></div>
 
-    <!-- Touch Controls -->
-    <div class="touch-controls" id="touchControls">
-        <div class="dpad">
-            <div class="touch-btn dpad-up" data-action="rotate">↑</div>
-            <div class="touch-btn dpad-left" data-action="left">←</div>
-            <div class="touch-btn dpad-down" data-action="down">↓</div>
-            <div class="touch-btn dpad-right" data-action="right">→</div>
+
+        <div id="controls-container">
+            <button id="start-pause-button" class="game-button">Start</button>
+            <button id="rotate-button" class="game-button">Rotate</button>
+            <button id="move-left-button" class="game-button">Left</button>
+            <button id="move-right-button" class="game-button">Right</button>
+            <button id="mute-button" class="game-button">Sound On</button>
+            <button id="instructions-button" class="game-button">Instructions</button>
+            <button id="hard-drop-button" class="game-button">Drop</button>
         </div>
-        <div class="control-group">
-            <div class="touch-btn special" data-action="drop">DROP</div>
-            <div class="touch-btn special" data-action="pause">⏸</div>
-            <div class="touch-btn special" data-action="music">🎵</div>
+
+        <div id="message-box" class="hidden">
+            <p id="message-text">Game Over</p>
+            <button id="restart-button">Restart</button>
+        </div>
+
+        <div id="instructions-popup">
+            <h2>How to Play</h2>
+            <ul>
+                <li><strong>Left/Right Arrows or D-Pad Left/Right:</strong> Move horizontally.</li>
+                <li><strong>Down Arrow or D-Pad Down:</strong> Soft drop.</li>
+                <li><strong>Up Arrow, 'A' Button, or D-Pad Up:</strong> Rotate.</li>
+                <li><strong>Spacebar or 'Y' Button:</strong> Hard drop.</li>
+                <li><strong>P, Start, or Select Button:</strong> Pause/Continue.</li>
+                <li><strong>M or Touch Music Icon:</strong> Mute/Unmute sound.</li>
+            </ul>
+            <p>Clear lines by filling all squares in a row. The game ends when a new tetromino cannot be placed
+                at the top of the grid.</p>
+            <button class="close-button">Close</button>
+        </div>
+
+        <div class="controller-status disconnected" id="controllerStatus">
+            🎮 No Controller
+        </div>
+
+        <div class="touch-controls" id="touchControls">
+            <div class="dpad">
+                <div class="touch-btn dpad-up" data-action="rotate">↑</div>
+                <div class="touch-btn dpad-left" data-action="left">←</div>
+                <div class="touch-btn dpad-down" data-action="down">↓</div>
+                <div class="touch-btn dpad-right" data-action="right">→</div>
+            </div>
+            <div class="control-group">
+                <div class="touch-btn special" data-action="drop">DROP</div>
+                <div class="touch-btn special" data-action="pause">⏸</div>
+                <div class="touch-btn special" data-action="music">🎵</div>
+            </div>
         </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
+        // Canvas and DOM Elements
+        const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        const nextCanvas = document.getElementById('nextCanvas');
-        const nextCtx = nextCanvas.getContext('2d');
-        
-        const BOARD_WIDTH = 10;
-        const BOARD_HEIGHT = 20;
-        const BLOCK_SIZE = 30;
-        
-        let board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
+        const scoreDisplay = document.getElementById('score');
+        const levelDisplay = document.getElementById('level');
+        const highScoreDisplay = document.getElementById('high-score');
+        const startPauseButton = document.getElementById('start-pause-button');
+        const rotateButton = document.getElementById('rotate-button');
+        const moveLeftButton = document.getElementById('move-left-button');
+        const moveRightButton = document.getElementById('move-right-button');
+        const muteButton = document.getElementById('mute-button');
+        const messageBox = document.getElementById('message-box');
+        const messageText = document.getElementById('message-text');
+        const restartButton = document.getElementById('restart-button');
+        const instructionsButton = document.getElementById('instructions-button');
+        const instructionsPopup = document.getElementById('instructions-popup');
+        const instructionsCloseButton = instructionsPopup.querySelector('.close-button');
+        const hardDropButton = document.getElementById('hard-drop-button');
+        // New banner elements
+        const levelUpBanner = document.getElementById('level-up-banner');
+        const dynamicMessageBanner = document.getElementById('dynamic-message-banner');
+
+
+        // Game Variables
+        let gridSize = 32;
+        const gridWidth = 10;
+        const gridHeight = 20;
+        let gameGrid = createEmptyGrid();
+        let currentTetromino = null;
+        let tetrominoX = 0;
+        let tetrominoY = 0;
         let score = 0;
         let level = 1;
-        let lines = 0;
-        let highScore = parseInt(localStorage.getItem('tetrisHighScore')) || 0;
-        let dropTime = 0;
-        let dropInterval = 1000;
-        let isPaused = false;
-        let gameRunning = true;
-        
-        // Audio variables
-        let audioContext;
-        let musicPlaying = false;
-        let masterVolume = 0.3;
-        let musicNodes = [];
+        let highScore = parseInt(localStorage.getItem('tetrisHighScoreV3')) || 0; // Use a versioned key
+        let gameSpeed = 750;
+        let dropInterval = gameSpeed;
+        const fastDropSpeed = 50;
+        let isPaused = true;
+        let isMuted = false;
+        let isFastDropping = false;
+        let nextTetromino = null;
 
-        // Controller and input variables
+        // Tetromino Shapes and Colors
+        const tetrominoShapes = [
+            [[1, 1, 1, 1]], // I
+            [[1, 0, 0], [1, 1, 1]], // J
+            [[0, 0, 1], [1, 1, 1]], // L
+            [[1, 1], [1, 1]], // O
+            [[0, 1, 1], [1, 1, 0]], // S
+            [[0, 1, 0], [1, 1, 1]], // T
+            [[1, 1, 0], [0, 1, 1]]  // Z
+        ];
+        const tetrominoColors = ['#00FFFF', '#0000FF', '#FFA500', '#FFFF00', '#00FF00', '#800080', '#FF0000'];
+
+
+        // ===== Audio Setup =====
+        let audioContext;
+        let musicNodes = [];
+        let musicPlaying = false;
+        let masterVolume = 0.2; // Slightly reduced master volume
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        const tetrisTheme = [ /* Main theme melody */
+            {note: 659.25, duration: 380}, {note: 493.88, duration: 190}, {note: 523.25, duration: 190}, 
+            {note: 587.33, duration: 380}, {note: 523.25, duration: 190}, {note: 493.88, duration: 190},
+            {note: 440.00, duration: 380}, {note: 440.00, duration: 190}, {note: 523.25, duration: 190}, 
+            {note: 659.25, duration: 380}, {note: 587.33, duration: 190}, {note: 523.25, duration: 190},
+            {note: 493.88, duration: 570}, {note: 523.25, duration: 190}, 
+            {note: 587.33, duration: 380}, {note: 659.25, duration: 380}, {note: 523.25, duration: 380}, 
+            {note: 440.00, duration: 380}, {note: 440.00, duration: 760} 
+        ];
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                if (isIOS && isSafari && audioContext.state === 'suspended') {
+                    const unlock = () => {
+                        audioContext.resume().then(() => {
+                            ['touchstart', 'touchend', 'click'].forEach(event => document.removeEventListener(event, unlock));
+                        });
+                    };
+                    ['touchstart', 'touchend', 'click'].forEach(event => document.addEventListener(event, unlock, { once: true, passive: false }));
+                }
+            }
+        }
+
+        function playNote(freq, duration, startTime = 0, type = 'square', volume = masterVolume) {
+            if (!audioContext || isMuted) return null;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.setValueAtTime(freq, audioContext.currentTime + startTime);
+            osc.type = type;
+            gain.gain.setValueAtTime(0, audioContext.currentTime + startTime);
+            gain.gain.linearRampToValueAtTime(volume, audioContext.currentTime + startTime + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + startTime + duration / 1000);
+            osc.start(audioContext.currentTime + startTime);
+            osc.stop(audioContext.currentTime + startTime + duration / 1000);
+            return { oscillator: osc, gainNode: gain };
+        }
+
+        function playTetrisThemeLoop() {
+            if (!musicPlaying || isMuted) return;
+            stopMusic();
+            musicNodes = [];
+            let currentTime = 0;
+            const noteGap = 0.04;
+            tetrisTheme.forEach(noteData => {
+                const node = playNote(noteData.note, noteData.duration, currentTime, 'triangle', masterVolume * 0.7); // Theme softer
+                if (node) musicNodes.push(node);
+                currentTime += (noteData.duration / 1000) + noteGap;
+            });
+            setTimeout(() => {
+                if (musicPlaying && !isPaused && !isMuted) playTetrisThemeLoop();
+            }, currentTime * 1000);
+        }
+
+        function startBackgroundMusic() {
+            if (isMuted || musicPlaying) return;
+            initAudio();
+            musicPlaying = true;
+            playTetrisThemeLoop();
+        }
+
+        function stopMusic() {
+            musicNodes.forEach(({ oscillator }) => { try { oscillator.stop(0); } catch (e) {} });
+            musicNodes = [];
+        }
+        
+        function stopBackgroundMusic() {
+            musicPlaying = false;
+            stopMusic();
+        }
+
+        function playSound(type) {
+            if (isMuted) return;
+            initAudio();
+            switch (type) {
+                case 'piece': playNote(330, 70, 0, 'sine', masterVolume * 0.8); break; // E4, softer
+                case 'line': // Standard 1-3 line clear
+                    [392, 493.88, 587.33].forEach((f, i) => playNote(f, 120, i * 0.04, 'triangle')); break; // G4, B4, D5
+                case 'tetrisClear': // 4 lines
+                    [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => playNote(f, 150, i * 0.05, 'sawtooth')); break; // C5, E5, G5, C6
+                case 'gameOver': playNote(164.81, 500, 0, 'sawtooth', masterVolume * 1.2); break; // E3, louder
+                case 'button': playNote(659.25, 50, 0, 'triangle', masterVolume * 0.6); break; // E5, quick
+                case 'levelUp':
+                    playNote(523.25, 100, 0, 'triangle');    // C5
+                    playNote(659.25, 100, 0.1, 'triangle');   // E5
+                    playNote(783.99, 100, 0.2, 'triangle');   // G5
+                    playNote(1046.50, 250, 0.3, 'triangle');  // C6 (longer)
+                    break;
+            }
+        }
+
+        // ===== Controller & Touch Support =====
         let gamepadConnected = false;
         let gamepadIndex = -1;
         let lastGamepadState = {};
-        let touchControlsVisible = false;
-        let backboneController = null;
 
-        // iOS Safari compatibility
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-        
-        const colors = [
-            '#000000', // empty
-            '#FF0000', // I-piece (red)
-            '#00FF00', // O-piece (green)
-            '#0000FF', // T-piece (blue)
-            '#FFFF00', // S-piece (yellow)
-            '#FF00FF', // Z-piece (magenta)
-            '#00FFFF', // J-piece (cyan)
-            '#FFA500'  // L-piece (orange)
-        ];
-        
-        const pieces = [
-            { // I-piece
-                shape: [
-                    [1, 1, 1, 1]
-                ],
-                color: 1
-            },
-            { // O-piece
-                shape: [
-                    [2, 2],
-                    [2, 2]
-                ],
-                color: 2
-            },
-            { // T-piece
-                shape: [
-                    [0, 3, 0],
-                    [3, 3, 3]
-                ],
-                color: 3
-            },
-            { // S-piece
-                shape: [
-                    [0, 4, 4],
-                    [4, 4, 0]
-                ],
-                color: 4
-            },
-            { // Z-piece
-                shape: [
-                    [5, 5, 0],
-                    [0, 5, 5]
-                ],
-                color: 5
-            },
-            { // J-piece
-                shape: [
-                    [6, 0, 0],
-                    [6, 6, 6]
-                ],
-                color: 6
-            },
-            { // L-piece
-                shape: [
-                    [0, 0, 7],
-                    [7, 7, 7]
-                ],
-                color: 7
-            }
-        ];
-        
-        let currentPiece = {
-            shape: [],
-            x: 0,
-            y: 0,
-            color: 0
-        };
-        
-        let nextPiece = null;
-        
-        // Tetris Theme Music (Korobeiniki) - simplified melody
-        const tetrisTheme = [
-            // Frequencies for the main melody (faster tempo)
-            {note: 659.25, duration: 400}, // E5
-            {note: 493.88, duration: 200}, // B4
-            {note: 523.25, duration: 200}, // C5
-            {note: 587.33, duration: 400}, // D5
-            {note: 523.25, duration: 200}, // C5
-            {note: 493.88, duration: 200}, // B4
-            {note: 440.00, duration: 400}, // A4
-            {note: 440.00, duration: 200}, // A4
-            {note: 523.25, duration: 200}, // C5
-            {note: 659.25, duration: 400}, // E5
-            {note: 587.33, duration: 200}, // D5
-            {note: 523.25, duration: 200}, // C5
-            {note: 493.88, duration: 600}, // B4
-            {note: 523.25, duration: 200}, // C5
-            {note: 587.33, duration: 400}, // D5
-            {note: 659.25, duration: 400}, // E5
-            {note: 523.25, duration: 400}, // C5
-            {note: 440.00, duration: 400}, // A4
-            {note: 440.00, duration: 800}, // A4
-        ];
-        
-        function initAudio() {
-            if (!audioContext) {
-                try {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    
-                    // iOS Safari audio context unlock
-                    if (isIOS && isSafari && audioContext.state === 'suspended') {
-                        const unlock = () => {
-                            audioContext.resume().then(() => {
-                                document.removeEventListener('touchstart', unlock);
-                                document.removeEventListener('touchend', unlock);
-                                document.removeEventListener('click', unlock);
-                            });
-                        };
-                        
-                        document.addEventListener('touchstart', unlock, false);
-                        document.addEventListener('touchend', unlock, false);
-                        document.addEventListener('click', unlock, false);
-                    }
-                } catch (e) {
-                    console.warn('Audio not supported:', e);
-                }
-            }
-        }
-        
-        function playNote(frequency, duration, startTime = 0) {
-            if (!audioContext) return;
-            
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime + startTime);
-            oscillator.type = 'square';
-            
-            gainNode.gain.setValueAtTime(0, audioContext.currentTime + startTime);
-            gainNode.gain.linearRampToValueAtTime(masterVolume * 0.1, audioContext.currentTime + startTime + 0.01);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + startTime + duration / 1000 - 0.01);
-            
-            oscillator.start(audioContext.currentTime + startTime);
-            oscillator.stop(audioContext.currentTime + startTime + duration / 1000);
-            
-            return {oscillator, gainNode};
-        }
-        
-        function playTetrisTheme() {
-            if (!audioContext || !musicPlaying) return;
-            
-            stopMusic();
-            musicNodes = [];
-            
-            let currentTime = 0;
-            const noteGap = 0.05; // Smaller gap between notes for faster tempo
-            
-            tetrisTheme.forEach((note, index) => {
-                const nodes = playNote(note.note, note.duration, currentTime);
-                if (nodes) musicNodes.push(nodes);
-                currentTime += (note.duration / 1000) + noteGap;
-            });
-            
-            // Loop the music
-            setTimeout(() => {
-                if (musicPlaying && gameRunning) {
-                    playTetrisTheme();
-                }
-            }, currentTime * 1000);
-        }
-        
-        function toggleMusic() {
-            initAudio();
-            musicPlaying = !musicPlaying;
-            
-            if (musicPlaying && gameRunning) {
-                // Resume audio context if suspended
-                if (audioContext.state === 'suspended') {
-                    audioContext.resume();
-                }
-                playTetrisTheme();
-            } else {
-                stopMusic();
-            }
-        }
-        
-        function stopMusic() {
-            musicNodes.forEach(({oscillator, gainNode}) => {
-                try {
-                    oscillator.stop();
-                } catch (e) {
-                    // Oscillator already stopped
-                }
-            });
-            musicNodes = [];
-        }
-        
-        function adjustVolume(delta) {
-            masterVolume = Math.max(0, Math.min(1, masterVolume + delta));
-        }
-        
-        function playLineClearSound() {
-            if (!audioContext) return;
-            
-            // Play a satisfying line clear sound
-            const frequencies = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-            frequencies.forEach((freq, i) => {
-                playNote(freq, 150, i * 0.05);
-            });
-        }
-
-        // Gamepad/Controller Functions
-        function detectBackboneController() {
-            const gamepads = navigator.getGamepads();
-            for (let i = 0; i < gamepads.length; i++) {
-                const gamepad = gamepads[i];
-                if (gamepad && (
-                    gamepad.id.toLowerCase().includes('backbone') ||
-                    gamepad.id.toLowerCase().includes('xbox') ||
-                    gamepad.id.toLowerCase().includes('mfi') ||
-                    gamepad.mapping === 'standard'
-                )) {
-                    return { gamepad, index: i };
+        function detectAndSetGamepad() { /* ... (no changes from v2) ... */ 
+            const pads = navigator.getGamepads();
+            for (let i = 0; i < pads.length; i++) {
+                const gp = pads[i];
+                if (gp && (gp.id.toLowerCase().includes('backbone') || gp.id.toLowerCase().includes('xbox') || gp.id.toLowerCase().includes('mfi') || gp.mapping === 'standard')) {
+                    return { gamepad: gp, index: i };
                 }
             }
             return null;
         }
 
-        function updateControllerStatus() {
+        function updateControllerStatus() { /* ... (no changes from v2) ... */ 
             const statusElement = document.getElementById('controllerStatus');
             const touchControls = document.getElementById('touchControls');
-            
-            const controller = detectBackboneController();
-            
-            if (controller) {
+            const controllerInfo = detectAndSetGamepad();
+
+            if (controllerInfo) {
                 gamepadConnected = true;
-                gamepadIndex = controller.index;
-                backboneController = controller.gamepad;
-                
-                statusElement.textContent = `🎮 ${controller.gamepad.id.substring(0, 20)}...`;
+                gamepadIndex = controllerInfo.index;
+                statusElement.textContent = `🎮 ${controllerInfo.gamepad.id.substring(0,20)}...`;
                 statusElement.className = 'controller-status connected';
-                
-                // Hide touch controls when controller is connected
                 touchControls.classList.remove('visible');
-                touchControlsVisible = false;
             } else {
                 gamepadConnected = false;
                 gamepadIndex = -1;
-                backboneController = null;
-                
                 statusElement.textContent = '🎮 No Controller';
                 statusElement.className = 'controller-status disconnected';
-                
-                // Show touch controls when no controller
                 if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
                     touchControls.classList.add('visible');
-                    touchControlsVisible = true;
                 }
             }
         }
+        
+        function handleGamepadInput() { /* ... (no changes from v2) ... */ 
+            if (!gamepadConnected || isPaused) return;
+            const gp = navigator.getGamepads()[gamepadIndex];
+            if (!gp) { updateControllerStatus(); return; }
 
-        function handleGamepadInput() {
-            if (!gamepadConnected || !gameRunning) return;
-            
-            const gamepad = navigator.getGamepads()[gamepadIndex];
-            if (!gamepad) {
-                updateControllerStatus();
-                return;
-            }
-            
-            // Button mapping for standard gamepad
             const buttons = {
-                dpadLeft: gamepad.buttons[14] ? gamepad.buttons[14].pressed : false,
-                dpadRight: gamepad.buttons[15] ? gamepad.buttons[15].pressed : false,
-                dpadUp: gamepad.buttons[12] ? gamepad.buttons[12].pressed : false,
-                dpadDown: gamepad.buttons[13] ? gamepad.buttons[13].pressed : false,
-                faceButtonDown: gamepad.buttons[0] ? gamepad.buttons[0].pressed : false, // A/Cross
-                faceButtonRight: gamepad.buttons[1] ? gamepad.buttons[1].pressed : false, // B/Circle
-                faceButtonLeft: gamepad.buttons[2] ? gamepad.buttons[2].pressed : false, // X/Square
-                faceButtonUp: gamepad.buttons[3] ? gamepad.buttons[3].pressed : false, // Y/Triangle
-                leftShoulder: gamepad.buttons[4] ? gamepad.buttons[4].pressed : false,
-                rightShoulder: gamepad.buttons[5] ? gamepad.buttons[5].pressed : false,
-                leftTrigger: gamepad.buttons[6] ? gamepad.buttons[6].pressed : false,
-                rightTrigger: gamepad.buttons[7] ? gamepad.buttons[7].pressed : false,
-                select: gamepad.buttons[8] ? gamepad.buttons[8].pressed : false,
-                start: gamepad.buttons[9] ? gamepad.buttons[9].pressed : false,
-                leftStick: gamepad.buttons[10] ? gamepad.buttons[10].pressed : false,
-                rightStick: gamepad.buttons[11] ? gamepad.buttons[11].pressed : false
+                left: gp.buttons[14]?.pressed, right: gp.buttons[15]?.pressed,
+                up: gp.buttons[12]?.pressed, down: gp.buttons[13]?.pressed,
+                a: gp.buttons[0]?.pressed, y: gp.buttons[3]?.pressed,
+                start: gp.buttons[9]?.pressed, select: gp.buttons[8]?.pressed
             };
-
-            // Analog stick input (with deadzone)
-            const leftStickX = Math.abs(gamepad.axes[0]) > 0.3 ? gamepad.axes[0] : 0;
-            const leftStickY = Math.abs(gamepad.axes[1]) > 0.3 ? gamepad.axes[1] : 0;
-            
-            // Prevent repeated actions by checking if button was just pressed
-            const justPressed = (button) => {
-                const wasPressed = lastGamepadState[button] || false;
-                const isPressed = buttons[button];
-                lastGamepadState[button] = isPressed;
-                return isPressed && !wasPressed;
+            const justPressed = (name) => {
+                const prev = lastGamepadState[name] || false;
+                const curr = buttons[name];
+                lastGamepadState[name] = curr;
+                return curr && !prev;
             };
+            
+            const axisX = Math.abs(gp.axes[0]) > 0.4 ? gp.axes[0] : 0;
+            const axisY = Math.abs(gp.axes[1]) > 0.4 ? gp.axes[1] : 0;
 
-            // Handle input
-            if (justPressed('dpadLeft') || (leftStickX < -0.5 && !lastGamepadState.stickLeft)) {
-                if (isValidMove(currentPiece, -1, 0)) {
-                    currentPiece.x--;
-                }
-                lastGamepadState.stickLeft = leftStickX < -0.5;
-            } else if (leftStickX >= -0.5) {
-                lastGamepadState.stickLeft = false;
-            }
+            if (justPressed('left') || (axisX < -0.5 && !lastGamepadState.stickLeft)) { moveTetrominoLeft(); lastGamepadState.stickLeft = true; } 
+            else if (axisX >= -0.5) { lastGamepadState.stickLeft = false; }
+
+            if (justPressed('right') || (axisX > 0.5 && !lastGamepadState.stickRight)) { moveTetrominoRight(); lastGamepadState.stickRight = true; }
+            else if (axisX <= 0.5) { lastGamepadState.stickRight = false; }
             
-            if (justPressed('dpadRight') || (leftStickX > 0.5 && !lastGamepadState.stickRight)) {
-                if (isValidMove(currentPiece, 1, 0)) {
-                    currentPiece.x++;
-                }
-                lastGamepadState.stickRight = leftStickX > 0.5;
-            } else if (leftStickX <= 0.5) {
-                lastGamepadState.stickRight = false;
-            }
+            if (buttons.down || axisY > 0.5) { moveTetrominoDown(); }
             
-            if (buttons.dpadDown || leftStickY > 0.5) {
-                if (isValidMove(currentPiece, 0, 1)) {
-                    currentPiece.y++;
-                    score += 1;
-                    updateScore();
-                }
-            }
-            
-            if (justPressed('dpadUp') || justPressed('faceButtonDown')) {
-                const rotated = rotatePiece(currentPiece);
-                if (isValidMove(currentPiece, 0, 0, rotated)) {
-                    currentPiece.shape = rotated;
-                }
-            }
-            
-            if (justPressed('faceButtonUp') || justPressed('rightTrigger')) {
-                hardDrop();
-            }
-            
-            if (justPressed('start') || justPressed('select')) {
-                isPaused = !isPaused;
-                if (isPaused) {
-                    stopMusic();
-                } else if (musicPlaying) {
-                    playTetrisTheme();
-                }
-            }
-            
-            if (justPressed('faceButtonLeft')) {
-                toggleMusic();
-            }
+            if (justPressed('up') || justPressed('a') || (axisY < -0.5 && !lastGamepadState.stickUp)) { rotateTetromino(); lastGamepadState.stickUp = true; }
+            else if (axisY >= -0.5) { lastGamepadState.stickUp = false; }
+
+            if (justPressed('y')) { hardDrop(); }
+            if (justPressed('start') || justPressed('select')) { startPauseButton.click(); }
         }
 
-        // Touch Controls
-        function initTouchControls() {
-            const touchControls = document.getElementById('touchControls');
-            const touchButtons = touchControls.querySelectorAll('.touch-btn');
-            
-            touchButtons.forEach(button => {
-                const action = button.getAttribute('data-action');
-                
-                // Prevent context menu and selection
-                button.addEventListener('contextmenu', (e) => e.preventDefault());
-                button.addEventListener('selectstart', (e) => e.preventDefault());
-                
-                // Touch events
-                button.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    handleTouchAction(action, true);
-                }, { passive: false });
-                
-                button.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    handleTouchAction(action, false);
-                }, { passive: false });
-                
-                // Mouse events for desktop testing
-                button.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    handleTouchAction(action, true);
-                });
-                
-                button.addEventListener('mouseup', (e) => {
-                    e.preventDefault();
-                    handleTouchAction(action, false);
-                });
+        function initTouchControls() { /* ... (no changes from v2) ... */ 
+            const touchControlsContainer = document.getElementById('touchControls');
+            touchControlsContainer.querySelectorAll('.touch-btn').forEach(btn => {
+                const action = btn.getAttribute('data-action');
+                btn.addEventListener('touchstart', e => { e.preventDefault(); handleTouchAction(action, true); }, {passive:false});
+                btn.addEventListener('touchend', e => { e.preventDefault(); handleTouchAction(action, false); }, {passive:false});
             });
         }
 
-        function handleTouchAction(action, isPressed) {
-            if (!gameRunning) return;
-            
+        function handleTouchAction(action, isPressed) { /* ... (no changes from v2, just ensure game is not paused for most actions) ... */
+            if (isPaused && !['pause', 'music'].includes(action)) return;
+            if (!isPressed && action === 'down') return; // Only trigger down on press for soft drop
+
             switch(action) {
-                case 'left':
-                    if (isPressed && isValidMove(currentPiece, -1, 0)) {
-                        currentPiece.x--;
-                    }
-                    break;
-                case 'right':
-                    if (isPressed && isValidMove(currentPiece, 1, 0)) {
-                        currentPiece.x++;
-                    }
-                    break;
-                case 'down':
-                    if (isPressed && isValidMove(currentPiece, 0, 1)) {
-                        currentPiece.y++;
-                        score += 1;
-                        updateScore();
-                    }
-                    break;
-                case 'rotate':
-                    if (isPressed) {
-                        const rotated = rotatePiece(currentPiece);
-                        if (isValidMove(currentPiece, 0, 0, rotated)) {
-                            currentPiece.shape = rotated;
-                        }
-                    }
-                    break;
-                case 'drop':
-                    if (isPressed) {
-                        hardDrop();
-                    }
-                    break;
-                case 'pause':
-                    if (isPressed) {
-                        isPaused = !isPaused;
-                        if (isPaused) {
-                            stopMusic();
-                        } else if (musicPlaying) {
-                            playTetrisTheme();
-                        }
-                    }
-                    break;
-                case 'music':
-                    if (isPressed) {
-                        toggleMusic();
-                    }
-                    break;
-            }
-        }
-        
-        function getRandomPiece() {
-            const piece = pieces[Math.floor(Math.random() * pieces.length)];
-            return {
-                shape: piece.shape.map(row => [...row]),
-                x: Math.floor(BOARD_WIDTH / 2) - Math.floor(piece.shape[0].length / 2),
-                y: 0,
-                color: piece.color
-            };
-        }
-        
-        function drawBlock(ctx, x, y, color) {
-            ctx.fillStyle = colors[color];
-            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-            
-            if (color > 0) {
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 1;
-                ctx.strokeRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-            }
-        }
-        
-        function drawBoard() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            for (let y = 0; y < BOARD_HEIGHT; y++) {
-                for (let x = 0; x < BOARD_WIDTH; x++) {
-                    drawBlock(ctx, x, y, board[y][x]);
-                }
-            }
-        }
-        
-        function drawPiece(piece, context = ctx, offsetX = 0, offsetY = 0) {
-            for (let y = 0; y < piece.shape.length; y++) {
-                for (let x = 0; x < piece.shape[y].length; x++) {
-                    if (piece.shape[y][x]) {
-                        if (context === ctx) {
-                            drawBlock(context, piece.x + x + offsetX, piece.y + y + offsetY, piece.color);
-                        } else {
-                            // For next piece preview
-                            context.fillStyle = colors[piece.color];
-                            context.fillRect((x + offsetX) * 20, (y + offsetY) * 20, 20, 20);
-                            context.strokeStyle = '#fff';
-                            context.lineWidth = 1;
-                            context.strokeRect((x + offsetX) * 20, (y + offsetY) * 20, 20, 20);
-                        }
-                    }
-                }
-            }
-        }
-        
-        function drawNextPiece() {
-            nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
-            if (nextPiece) {
-                const offsetX = (6 - nextPiece.shape[0].length) / 2;
-                const offsetY = (6 - nextPiece.shape.length) / 2;
-                drawPiece(nextPiece, nextCtx, offsetX, offsetY);
+                case 'left': if(isPressed) moveTetrominoLeft(); break;
+                case 'right': if(isPressed) moveTetrominoRight(); break;
+                case 'down': if(isPressed) moveTetrominoDown(); break;
+                case 'rotate': if(isPressed) rotateTetromino(); break;
+                case 'drop': if(isPressed) hardDrop(); break;
+                case 'pause': if(isPressed) startPauseButton.click(); break;
+                case 'music': if(isPressed) muteButton.click(); break;
             }
         }
 
-        function drawGhostPiece() {
-            if (!currentPiece) return;
-            const ghost = {
-                shape: currentPiece.shape,
-                x: currentPiece.x,
-                y: currentPiece.y,
-                color: currentPiece.color
-            };
-            while (isValidMove(ghost, 0, 1)) {
-                ghost.y++;
-            }
-            ctx.save();
-            ctx.globalAlpha = 0.3;
-            drawPiece(ghost);
-            ctx.restore();
+        // Game Logic Functions
+        function createEmptyGrid() {
+            return Array.from({ length: gridHeight }, () => Array(gridWidth).fill(0));
+        }
+
+        function generateTetromino() {
+            currentTetromino = nextTetromino ? nextTetromino : getRandomTetromino();
+            nextTetromino = getRandomTetromino();
+            drawNextPiecePreview();
+            tetrominoX = Math.floor(gridWidth / 2) - Math.ceil(currentTetromino.shape[0].length / 2);
+            tetrominoY = 0;
+        }
+
+        function getRandomTetromino() {
+            const shapeIndex = Math.floor(Math.random() * tetrominoShapes.length);
+            return { shape: tetrominoShapes[shapeIndex], color: tetrominoColors[shapeIndex] };
         }
         
-        function isValidMove(piece, dx = 0, dy = 0, shape = piece.shape) {
+        function drawGameGrid() { /* ... (no changes from v2) ... */ 
+            for (let y = 0; y < gridHeight; y++) {
+                for (let x = 0; x < gridWidth; x++) {
+                    if (gameGrid[y][x]) {
+                        ctx.fillStyle = gameGrid[y][x];
+                        ctx.fillRect(x * gridSize, y * gridSize, gridSize, gridSize);
+                        ctx.strokeStyle = '#111827'; 
+                        ctx.strokeRect(x * gridSize, y * gridSize, gridSize, gridSize);
+                    }
+                }
+            }
+        }
+
+        function drawTetromino() { /* ... (no changes from v2) ... */ 
+            if (!currentTetromino) return;
+            ctx.fillStyle = currentTetromino.color;
+            currentTetromino.shape.forEach((row, y) => {
+                row.forEach((cell, x) => {
+                    if (cell) {
+                        ctx.fillRect((tetrominoX + x) * gridSize, (tetrominoY + y) * gridSize, gridSize, gridSize);
+                        ctx.strokeStyle = '#111827';
+                        ctx.strokeRect((tetrominoX + x) * gridSize, (tetrominoY + y) * gridSize, gridSize, gridSize);
+                    }
+                });
+            });
+        }
+        
+        function drawGhostPiece() { /* ... (no changes from v2) ... */ 
+            if (!currentTetromino || isPaused) return;
+            let ghostY = tetrominoY;
+            while (isValidMove(0, 1, currentTetromino.shape, tetrominoX, ghostY)) { // Pass all params
+                ghostY++;
+            }
+            ctx.globalAlpha = 0.25; // Slightly more subtle ghost
+            ctx.fillStyle = currentTetromino.color;
+            currentTetromino.shape.forEach((row, y) => {
+                row.forEach((cell, x) => {
+                    if (cell) {
+                        ctx.fillRect((tetrominoX + x) * gridSize, (ghostY + y) * gridSize, gridSize, gridSize);
+                    }
+                });
+            });
+            ctx.globalAlpha = 1.0;
+        }
+
+        function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+        function isValidMove(offsetX, offsetY, shape = currentTetromino.shape, currentX = tetrominoX, currentY = tetrominoY) {
+            if (!shape) return false; // Ensure shape is defined
             for (let y = 0; y < shape.length; y++) {
                 for (let x = 0; x < shape[y].length; x++) {
                     if (shape[y][x]) {
-                        const newX = piece.x + x + dx;
-                        const newY = piece.y + y + dy;
-                        
-                        if (newX < 0 || newX >= BOARD_WIDTH || newY >= BOARD_HEIGHT) {
-                            return false;
-                        }
-                        
-                        if (newY >= 0 && board[newY][newX]) {
+                        const newX = currentX + x + offsetX;
+                        const newY = currentY + y + offsetY;
+                        if (newX < 0 || newX >= gridWidth || newY >= gridHeight || (newY >= 0 && gameGrid[newY]?.[newX])) {
                             return false;
                         }
                     }
@@ -878,269 +740,357 @@
             }
             return true;
         }
-        
-        function placePiece(piece) {
-            for (let y = 0; y < piece.shape.length; y++) {
-                for (let x = 0; x < piece.shape[y].length; x++) {
-                    if (piece.shape[y][x]) {
-                        const boardY = piece.y + y;
-                        const boardX = piece.x + x;
-                        if (boardY >= 0) {
-                            board[boardY][boardX] = piece.color;
-                        }
-                    }
-                }
+
+        function resetDropInterval() { dropInterval = gameSpeed; }
+
+        function moveTetrominoDown() {
+            if (isPaused) return;
+            if (isValidMove(0, 1)) {
+                tetrominoY++;
+            } else {
+                lockTetromino();
+                clearLines(); // This will handle score updates and new piece generation
+                if (isPaused) return; // Game over might have been triggered in clearLines
+                generateTetromino();
+                if (!isValidMove(0, 0)) { gameOver(); return; }
+                playSound("piece");
+                resetDropInterval();
             }
-        }
-        
-        function clearLines() {
-            let linesCleared = 0;
-            
-            for (let y = BOARD_HEIGHT - 1; y >= 0; y--) {
-                if (board[y].every(cell => cell !== 0)) {
-                    board.splice(y, 1);
-                    board.unshift(Array(BOARD_WIDTH).fill(0));
-                    linesCleared++;
-                    y++; // Check the same row again
-                }
-            }
-            
-            if (linesCleared > 0) {
-                lines += linesCleared;
-                score += linesCleared * 100 * level;
-                level = Math.floor(lines / 10) + 1;
-                dropInterval = Math.max(50, 1000 - (level - 1) * 100);
-                
-                playLineClearSound();
-                updateScore();
-            }
-        }
-        
-        function rotatePiece(piece) {
-            const rotated = [];
-            const N = piece.shape.length;
-            const M = piece.shape[0].length;
-            
-            for (let i = 0; i < M; i++) {
-                rotated[i] = [];
-                for (let j = 0; j < N; j++) {
-                    rotated[i][j] = piece.shape[N - 1 - j][i];
-                }
-            }
-            
-            return rotated;
-        }
-        
-        function spawnNewPiece() {
-            currentPiece = nextPiece || getRandomPiece();
-            nextPiece = getRandomPiece();
-            
-            if (!isValidMove(currentPiece)) {
-                gameOver();
-            }
-        }
-        
-        function gameOver() {
-            gameRunning = false;
-            stopMusic();
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem('tetrisHighScore', highScore);
-            }
-            document.getElementById('finalScore').textContent = score;
-            updateHighScore();
-            document.getElementById('gameOver').style.display = 'block';
-        }
-        
-        function updateScore() {
-            document.getElementById('score').textContent = score;
-            document.getElementById('level').textContent = level;
-            document.getElementById('lines').textContent = lines;
-            updateHighScore();
         }
 
-        function updateHighScore() {
-            document.getElementById('highScore').textContent = highScore;
-            document.getElementById('finalHighScore').textContent = highScore;
+        function moveTetrominoLeft() { if (!isPaused && isValidMove(-1, 0)) tetrominoX--; }
+        function moveTetrominoRight() { if (!isPaused && isValidMove(1, 0)) tetrominoX++; }
+
+        function rotateTetromino() {
+            if (isPaused || !currentTetromino) return;
+            const rotatedShape = rotateMatrix(currentTetromino.shape);
+            if (isValidMove(0, 0, rotatedShape)) {
+                currentTetromino.shape = rotatedShape;
+            } else { // Basic wall kick
+                if (isValidMove(1, 0, rotatedShape)) { tetrominoX++; currentTetromino.shape = rotatedShape; }
+                else if (isValidMove(-1, 0, rotatedShape)) { tetrominoX--; currentTetromino.shape = rotatedShape; }
+            }
         }
-        
-        function gameLoop(timestamp) {
-            if (!gameRunning || isPaused) {
-                if (gameRunning) {
-                    // Still check for controller input during pause
-                    handleGamepadInput();
-                    requestAnimationFrame(gameLoop);
+
+        function rotateMatrix(matrix) {
+            const rows = matrix.length, cols = matrix[0].length;
+            const newMatrix = Array.from({ length: cols }, () => Array(rows).fill(0));
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    newMatrix[x][rows - 1 - y] = matrix[y][x];
                 }
-                return;
             }
-            
-            // Handle controller input
-            handleGamepadInput();
-            
-            if (timestamp - dropTime > dropInterval) {
-                if (isValidMove(currentPiece, 0, 1)) {
-                    currentPiece.y++;
-                } else {
-                    placePiece(currentPiece);
-                    clearLines();
-                    spawnNewPiece();
-                }
-                dropTime = timestamp;
-            }
-            
-            drawBoard();
-            drawGhostPiece();
-            drawPiece(currentPiece);
-            drawNextPiece();
-            
-            requestAnimationFrame(gameLoop);
+            return newMatrix;
+        }
+
+        function lockTetromino() {
+            if (!currentTetromino) return;
+            currentTetromino.shape.forEach((row, y) => {
+                row.forEach((cell, x) => {
+                    if (cell && (tetrominoY + y >= 0)) {
+                        gameGrid[tetrominoY + y][tetrominoX + x] = currentTetromino.color;
+                    }
+                });
+            });
         }
         
-        function hardDrop() {
-            while (isValidMove(currentPiece, 0, 1)) {
-                currentPiece.y++;
-                score += 2;
+        // Function to show and hide game message banners
+        function showGameMessage(elementId, messageTextContent, duration = 2000) {
+            const banner = document.getElementById(elementId);
+            if (banner) {
+                banner.textContent = messageTextContent;
+                banner.classList.remove('hidden');
+                // Force reflow to ensure transition plays
+                void banner.offsetWidth; 
+                banner.classList.add('visible');
+                
+                setTimeout(() => {
+                    banner.classList.remove('visible');
+                    // Add hidden back after transition to remove from layout
+                    setTimeout(() => banner.classList.add('hidden'), 300); // Match CSS transition duration
+                }, duration);
             }
-            updateScore();
         }
-        
-        document.addEventListener('keydown', (e) => {
-            if (!gameRunning) return;
-            
-            switch(e.key) {
-                case 'ArrowLeft':
-                    if (isValidMove(currentPiece, -1, 0)) {
-                        currentPiece.x--;
-                    }
-                    break;
-                case 'ArrowRight':
-                    if (isValidMove(currentPiece, 1, 0)) {
-                        currentPiece.x++;
-                    }
-                    break;
-                case 'ArrowDown':
-                    if (isValidMove(currentPiece, 0, 1)) {
-                        currentPiece.y++;
-                        score += 1;
-                        updateScore();
-                    }
-                    break;
-                case 'ArrowUp':
-                    const rotated = rotatePiece(currentPiece);
-                    if (isValidMove(currentPiece, 0, 0, rotated)) {
-                        currentPiece.shape = rotated;
-                    }
-                    break;
-                case ' ':
-                    e.preventDefault();
-                    hardDrop();
-                    break;
-                case 'p':
-                case 'P':
-                    isPaused = !isPaused;
-                    if (isPaused) {
-                        stopMusic();
-                    } else if (musicPlaying) {
-                        playTetrisTheme();
-                    }
-                    break;
-                case 'm':
-                case 'M':
-                    toggleMusic();
-                    break;
+
+        function clearLines() {
+            let linesToClear = [];
+            for (let y = gridHeight - 1; y >= 0; y--) {
+                if (gameGrid[y].every(cell => cell)) linesToClear.push(y);
             }
-        });
-        
-        function restartGame() {
-            board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
-            score = 0;
-            level = 1;
-            lines = 0;
-            dropInterval = 1000;
-            isPaused = false;
-            gameRunning = true;
-            
-            document.getElementById('gameOver').style.display = 'none';
-            updateScore();
-            
-            nextPiece = getRandomPiece();
-            spawnNewPiece();
-            
-            if (musicPlaying) {
-                playTetrisTheme();
-            }
-            
-            requestAnimationFrame(gameLoop);
-        }
-        
-        // Initialize game
-        nextPiece = getRandomPiece();
-        spawnNewPiece();
-        updateScore();
-        updateHighScore();
-        
-        // Initialize touch controls
-        initTouchControls();
-        
-        // Initialize controller detection
-        updateControllerStatus();
-        
-        // Gamepad connection events
-        window.addEventListener('gamepadconnected', (e) => {
-            console.log('Gamepad connected:', e.gamepad.id);
-            updateControllerStatus();
-        });
-        
-        window.addEventListener('gamepaddisconnected', (e) => {
-            console.log('Gamepad disconnected:', e.gamepad.id);
-            updateControllerStatus();
-        });
-        
-        // Periodic controller check (for browsers that don't fire events)
-        setInterval(updateControllerStatus, 2000);
-        
-        // iOS Safari visibility change handling
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                if (musicPlaying && !isPaused) {
-                    stopMusic();
-                }
-            } else {
-                if (musicPlaying && !isPaused && gameRunning) {
-                    setTimeout(() => {
-                        if (audioContext && audioContext.state === 'suspended') {
-                            audioContext.resume().then(() => {
-                                playTetrisTheme();
-                            });
-                        } else {
-                            playTetrisTheme();
+
+            if (linesToClear.length > 0) {
+                animateLineClear(linesToClear, () => { // Pass callback to handle actions post-animation
+                    // Sound and message logic based on lines cleared
+                    if (linesToClear.length === 4) {
+                        playSound("tetrisClear");
+                        showGameMessage('dynamic-message-banner', 'TETRIS!', 2000);
+                    } else if (linesToClear.length > 0) { // For 1, 2, or 3 lines
+                        playSound("line");
+                        if (linesToClear.length >= 2) { // Message for 2 or 3 lines
+                             showGameMessage('dynamic-message-banner', `${linesToClear.length} Lines!`, 1500);
                         }
-                    }, 100);
+                    }
+
+                    // Remove lines from grid
+                    linesToClear.forEach(lineY => {
+                        gameGrid.splice(lineY, 1);
+                        gameGrid.unshift(Array(gridWidth).fill(0));
+                    });
+                    updateScore(linesToClear.length); // Update score and potentially level
+                });
+            }
+        }
+        
+        function animateLineClear(lines, callback) { /* ... (no changes from v2's animateLineClear, but ensure it calls the callback) ... */
+            const animationFrames = 6; 
+            let currentFrame = 0;
+            const originalLineColors = lines.map(y => [...gameGrid[y]]); // Store original colors
+
+            function animationStep() {
+                lines.forEach((y, index) => {
+                    const isWhiteFrame = currentFrame % 2 === 0;
+                    for (let x = 0; x < gridWidth; x++) {
+                        // Important: modify a temporary representation or directly draw if not changing gameGrid state here
+                        ctx.fillStyle = isWhiteFrame ? '#FFFFFF' : originalLineColors[index][x] || '#242424'; // Fallback to bg
+                        ctx.fillRect(x * gridSize, y * gridSize, gridSize, gridSize);
+                         if (!isWhiteFrame && originalLineColors[index][x]) { // Add border back for non-white frames
+                            ctx.strokeStyle = '#111827';
+                            ctx.strokeRect(x * gridSize, y * gridSize, gridSize, gridSize);
+                        }
+                    }
+                });
+
+                currentFrame++;
+                if (currentFrame < animationFrames) {
+                    setTimeout(animationStep, 50); 
+                } else {
+                    // Redraw the grid in its current state before actual line removal by callback
+                    clearCanvas();
+                    drawGameGrid(); // Draw grid without the lines that will be cleared
+                    if(currentTetromino && !isPaused) drawTetromino(); // Redraw current piece if any
+                    callback(); // Execute actual line removal and score update
                 }
+            }
+            animationStep();
+        }
+
+        function updateScore(linesCleared) {
+            const basePoints = { 1: 100, 2: 300, 3: 500, 4: 800 };
+            score += (basePoints[linesCleared] || 0) * level;
+            scoreDisplay.textContent = score;
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('tetrisHighScoreV3', highScore);
+                updateHighScoreDisplay();
+            }
+
+            const levelThreshold = level * 500 + ((level -1) * 250); // Slightly increasing threshold
+            if (score >= levelThreshold) {
+                level++;
+                levelDisplay.textContent = level;
+                gameSpeed = Math.max(100, gameSpeed - Math.min(50, level * 5)); // Speed increase scales slightly with level
+                resetDropInterval();
+                showGameMessage('level-up-banner', `Level ${level}!`, 2200);
+                playSound("levelUp");
+            }
+        }
+
+        function gameOver() {
+            isPaused = true;
+            stopBackgroundMusic();
+            messageText.textContent = score > highScore ? `Game Over! New High Score: ${highScore}` : `Game Over! Score: ${score}`;
+            updateHighScoreDisplay(); // Ensure high score display is current
+            messageBox.classList.remove('hidden');
+            playSound("gameOver");
+        }
+
+        function restartGame() {
+            gameGrid = createEmptyGrid();
+            score = 0; level = 1; gameSpeed = 750; dropInterval = gameSpeed;
+            isFastDropping = false;
+            scoreDisplay.textContent = score;
+            levelDisplay.textContent = level;
+            messageBox.classList.add('hidden');
+            isPaused = true;
+            startPauseButton.textContent = 'Start';
+            clearCanvas();
+            currentTetromino = null; nextTetromino = null;
+            resizeCanvasAndGrid(); // Use combined function
+            updateHighScoreDisplay();
+            stopBackgroundMusic();
+            // Hide banners immediately on restart
+            levelUpBanner.classList.add('hidden'); levelUpBanner.classList.remove('visible');
+            dynamicMessageBanner.classList.add('hidden'); dynamicMessageBanner.classList.remove('visible');
+        }
+
+        let lastFrameTime = 0;
+        let dropAccumulator = 0;
+        function gameLoop(currentTime = 0) {
+            const deltaTime = currentTime - lastFrameTime;
+            lastFrameTime = currentTime;
+
+            handleGamepadInput();
+
+            if (!isPaused) {
+                dropAccumulator += deltaTime;
+                if (dropAccumulator > dropInterval) {
+                    moveTetrominoDown();
+                    dropAccumulator = 0;
+                }
+                clearCanvas();
+                drawGameGrid();
+                drawGhostPiece();
+                drawTetromino();
+            }
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function resizeCanvasAndGrid() {
+            const container = document.getElementById('game-container');
+            const containerStyle = window.getComputedStyle(container);
+            const containerPadding = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
+            const availableWidth = container.offsetWidth - containerPadding;
+            const aspectRatio = gridWidth / gridHeight;
+            let newCanvasWidth = Math.min(availableWidth * 0.9, 320); // Use 90% of available, max 320
+            newCanvasWidth = Math.floor(newCanvasWidth / gridWidth) * gridWidth;
+            
+            canvas.width = newCanvasWidth;
+            canvas.height = Math.floor(newCanvasWidth / aspectRatio);
+            gridSize = Math.floor(canvas.width / gridWidth);
+            
+            // Also resize preview canvas based on new gridSize
+            const previewCanvas = document.getElementById('preview-canvas');
+            const pGridSize = Math.max(10, Math.floor(gridSize * 0.6)); // Preview cells a bit smaller
+            previewCanvas.width = 4 * pGridSize + 4; // Max width for a 4-block piece, plus small padding
+            previewCanvas.height = 4 * pGridSize + 4;
+            if (nextTetromino) drawNextPiecePreview(pGridSize); // Redraw with new size
+        }
+
+        function drawNextPiecePreview(pGridSize = Math.max(10, Math.floor(gridSize * 0.6))) {
+            const pCanvas = document.getElementById('preview-canvas');
+            const pCtx = pCanvas.getContext('2d');
+            pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+            if (!nextTetromino) return;
+
+            pCtx.fillStyle = nextTetromino.color;
+            const shape = nextTetromino.shape;
+            const shapeWidth = shape[0].length * pGridSize;
+            const shapeHeight = shape.length * pGridSize;
+            const offsetX = (pCanvas.width - shapeWidth) / 2;
+            const offsetY = (pCanvas.height - shapeHeight) / 2;
+
+            shape.forEach((row, y) => {
+                row.forEach((cell, x) => {
+                    if (cell) {
+                        pCtx.fillRect(offsetX + x * pGridSize, offsetY + y * pGridSize, pGridSize, pGridSize);
+                        pCtx.strokeStyle = '#111827';
+                        pCtx.strokeRect(offsetX + x * pGridSize, offsetY + y * pGridSize, pGridSize, pGridSize);
+                    }
+                });
+            });
+        }
+
+        function hardDrop() {
+            if (isPaused || !currentTetromino) return;
+            let tempY = tetrominoY;
+            while (isValidMove(0, 1, currentTetromino.shape, tetrominoX, tempY)) {
+                tempY++;
+            }
+            tetrominoY = tempY; // Apply the full drop
+            lockTetromino();
+            clearLines(); // Handles score, new piece, game over check
+            if (isPaused) return; // Game might have ended
+            generateTetromino();
+            if (!isValidMove(0, 0)) { gameOver(); return; }
+            playSound("piece"); // Sound for hard drop landing
+            dropAccumulator = 0; // Reset drop counter after hard drop
+        }
+
+        function updateHighScoreDisplay() { highScoreDisplay.textContent = highScore; }
+
+        // Event Listeners Setup
+        startPauseButton.addEventListener('click', () => {
+            playSound("button");
+            if (isPaused) {
+                if (!currentTetromino) { 
+                    restartGame(); // Full reset if starting from scratch
+                    isPaused = true; // restartGame sets it to true, so set to false here to start
+                }
+                 isPaused = false;
+                startPauseButton.textContent = 'Pause';
+                if (!musicPlaying) startBackgroundMusic();
+                lastFrameTime = performance.now(); // Reset timer for game loop
+                dropAccumulator = 0; // Reset accumulator
+                if(currentTetromino === null) generateTetromino(); // Ensure piece if restarting an already over game
+            } else {
+                isPaused = true;
+                startPauseButton.textContent = 'Continue';
+                if (musicPlaying) stopBackgroundMusic(); // Stop only if it was playing
             }
         });
-        
-        requestAnimationFrame(gameLoop);
-        
-        // Auto-start music after first user interaction
-        document.addEventListener('click', () => {
-            if (!audioContext) {
-                initAudio();
-                musicPlaying = true;
-                playTetrisTheme();
+        // Other button listeners (rotate, left, right, mute, restart, instructions, hardDrop)
+        rotateButton.addEventListener('click', () => { playSound("button"); rotateTetromino(); });
+        moveLeftButton.addEventListener('click', () => { playSound("button"); moveTetrominoLeft(); });
+        moveRightButton.addEventListener('click', () => { playSound("button"); moveTetrominoRight(); });
+        muteButton.addEventListener('click', () => {
+            playSound("button"); 
+            isMuted = !isMuted;
+            muteButton.textContent = isMuted ? 'Sound Off' : 'Sound On';
+            if (isMuted) stopBackgroundMusic();
+            else if (!isPaused && !musicPlaying) startBackgroundMusic();
+        });
+        restartButton.addEventListener('click', () => { playSound("button"); restartGame(); });
+        instructionsButton.addEventListener('click', () => { playSound("button"); instructionsPopup.style.display = 'block'; });
+        instructionsCloseButton.addEventListener('click', () => instructionsPopup.style.display = 'none');
+        hardDropButton.addEventListener('click', () => { playSound("button"); hardDrop(); });
+
+        // Keyboard Controls
+        document.addEventListener('keydown', event => {
+            if (!isPaused && ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', ' '].includes(event.key)) {
+                event.preventDefault();
             }
-        }, { once: true });
+            if (event.repeat) return; // Prevent repeated actions from holding key, except for down
+
+            switch (event.key.toLowerCase()) {
+                case 'arrowleft': moveTetrominoLeft(); break;
+                case 'arrowright': moveTetrominoRight(); break;
+                case 'arrowdown': 
+                    if(!isPaused) {
+                        isFastDropping = true; dropInterval = fastDropSpeed; moveTetrominoDown(); /* Move one step now */
+                    }
+                    break;
+                case 'arrowup': rotateTetromino(); break;
+                case ' ': hardDrop(); break;
+                case 'p': startPauseButton.click(); break;
+                case 'm': muteButton.click(); break;
+            }
+        });
+        document.addEventListener('keyup', event => {
+            if (event.key === 'ArrowDown') {
+                isFastDropping = false; resetDropInterval();
+            }
+        });
+
+        // Initial Setup
+        window.addEventListener('resize', () => {
+            resizeCanvasAndGrid();
+            // Redraw if game is active or just started
+            clearCanvas(); 
+            drawGameGrid();
+            if (currentTetromino) { drawGhostPiece(); drawTetromino(); }
+            drawNextPiecePreview(); // Ensure preview is also redrawn
+        });
         
-        // iOS Safari touch unlock for audio
-        if (isIOS && isSafari) {
-            document.addEventListener('touchstart', () => {
-                if (!audioContext) {
-                    initAudio();
-                    musicPlaying = true;
-                    playTetrisTheme();
-                }
-            }, { once: true });
-        }
+        // Gamepad and Touch Controls Initialization
+        updateControllerStatus(); 
+        initTouchControls();      
+        window.addEventListener("gamepadconnected", updateControllerStatus);
+        window.addEventListener("gamepaddisconnected", updateControllerStatus);
+        setInterval(updateControllerStatus, 2000); 
+
+        restartGame(); // Set initial state, which includes isPaused = true
+        requestAnimationFrame(gameLoop); // Start the main game loop
     </script>
 </body>
 </html>
